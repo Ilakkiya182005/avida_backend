@@ -1,5 +1,5 @@
 const cookie = require("cookie-parser");
-require('dotenv').config();
+// require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(cors());
 
 // Database Connection
-mongoose.connect(process.env.MONGOURL).then(() => console.log("MongoDB Connected"))
+mongoose.connect("mongodb+srv://ilakkiyabaskaran1807:QL4JYs6W7KICDymy@cluster.7mtd6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster").then(() => console.log("MongoDB Connected"))
   .catch(err => console.log("MongoDB Connection Error: ", err));
 
 // Routes
