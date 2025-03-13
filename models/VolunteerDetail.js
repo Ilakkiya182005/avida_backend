@@ -33,6 +33,23 @@ const VolunteerDetailSchema = new mongoose.Schema({
         type: Number, 
         required: true, 
         min: 0 
+    },
+    Aadhar_Number:{
+        type:Number,
+        required:true
+    },
+    Pan_Card_Number:{
+        type:String,
+        required:true
+    },
+    location_coordinate_latitude:{
+        type:Number,
+        required:true
+
+    },
+    location_coordiante_longitude:{
+        type:Number,
+        required:true
     }
 }, { timestamps: true });
 

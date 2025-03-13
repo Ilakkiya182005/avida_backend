@@ -75,10 +75,11 @@ const registerVolunteer = async (req, res) => {
     }
 
     // Create a new volunteer entry
-    const newVolunteer = new VolunteerDetail({ ...req.body, userId: req.user._id });
+    const newVolunteer = new VolunteerDetail({ ...req.body, userId: req.user._id});
+    console.log(newVolunteer);
     await newVolunteer.save();
 
-    res.status(201).json({ message: "Volunteer details added successfully" });
+    res.status(201).json(newVolunteer);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
