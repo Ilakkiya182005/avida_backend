@@ -1,5 +1,5 @@
 const cookie = require("cookie-parser");
-// require('dotenv').config();
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -20,8 +20,12 @@ const server = http.createServer(app);
 app.use(cookie());
 // Middleware
 app.use(express.json());
-app.use(cors());
-
+app.use(
+  cors({
+    origin: "http://localhost:5173", // Allow only your frontend domain
+    credentials: true, // Allow credentials (cookies, sessions)
+  })
+);
 // Database Connection
 mongoose.connect("mongodb+srv://ilakkiyabaskaran1807:QL4JYs6W7KICDymy@cluster.7mtd6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster").then(() => console.log("MongoDB Connected"))
   .catch(err => console.log("MongoDB Connection Error: ", err));
@@ -37,5 +41,5 @@ app.use('/',disabledRoutes)
 //chatController.chatHandler(io);
 
 // Server Listening
-const PORT =  5000;
+const PORT =  5001;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));

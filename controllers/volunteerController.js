@@ -7,16 +7,10 @@ const validateVolunteerRegistration = [
     body("userId").notEmpty().withMessage("User ID is required"),
     body("state").notEmpty().withMessage("State is required"),
     body("city").notEmpty().withMessage("City is required"),
-    body("languages_known")
-        .isArray({ min: 1 }).withMessage("At least one language must be known")
-        .custom((value) => value.every(lang => typeof lang === "string")).withMessage("Languages must be strings"),
     body("qualification").notEmpty().withMessage("Qualification is required"),
     body("available_dates")
         .isArray({ min: 1 }).withMessage("At least one available date is required")
         .custom((value) => value.every(date => /^\d{4}-\d{2}-\d{2}$/.test(date))).withMessage("Dates must be in YYYY-MM-DD format"),
-    body("available_session")  // Fixed naming issue
-        .isArray({ min: 1 }).withMessage("At least one available session is required")
-        .custom((value) => value.every(session => ["morning", "afternoon", "evening"].includes(session))).withMessage('Sessions must be "morning", "afternoon", or "evening"'),
     body("past_experience")
         .notEmpty().withMessage("Past experience is required")
         .isIn(["yes", "no"]).withMessage("Experience must be 'yes' or 'no'"),
@@ -39,14 +33,9 @@ const validateVolunteerProfileUpdate = [
       .optional()
       .isArray({ min: 1 })
       .withMessage("At least one available session is required")
-      .custom((value) => value.every(session => ["morning", "afternoon", "evening"].includes(session)))
+      .custom((value) => value.every(session => ["Morning", "Afternoon", "Evening"].includes(session)))
       .withMessage('Sessions must be "morning", "afternoon", or "evening"'),
-  body("language_known")
-      .optional()
-      .isArray({ min: 1 })
-      .withMessage("At least one language must be known")
-      .custom((value) => value.every(lang => typeof lang === "string"))
-      .withMessage("Languages must be strings"),
+
   body("city")
       .optional()
       .notEmpty()
@@ -115,13 +104,44 @@ const updateVolunteerProfile = async (req, res) => {
       res.status(500).json({ error: error.message });
   }
 };
+const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user._id; // Extract userId from authenticated request
+    console.log("Fetching user details for user:", userId);
+
+    // Find the volunteer details associated with the logged-in user and populate user details
+    const volDetails = await VolunteerDetail.findOne({ userId }).populate({
+      path: "userId", // Assuming userId in VolunteerDetail references User model
+      select: "firstName lastName emailId", // Fetch only these fields from User model
+    });
+
+    if (!volDetails) {
+      return res.status(404).json({ message: "No volunteer details found for this user" });
+    }
+
+    // Construct response including both VolunteerDetail and User details
+    const response = {
+      firstName: volDetails.userId.firstName,
+      lastName: volDetails.userId.lastName,
+      emailId: volDetails.userId.emailId,
+      ...volDetails._doc, // Spread to include volunteer details
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error fetching volunteer details:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 
 // Export functions
 module.exports = {
   validateVolunteerRegistration,
   registerVolunteer,
   updateVolunteerProfile,
-  validateVolunteerProfileUpdate
+  validateVolunteerProfileUpdate,
+  getUserProfile
 };
 
 

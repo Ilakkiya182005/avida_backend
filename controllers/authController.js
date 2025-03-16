@@ -27,9 +27,12 @@ exports.login = async (req, res) => {
 
         const token = jwt.sign({ userId: user._id, userType: user.userType }, "ilak@2005", { expiresIn: '7d' });
         res.cookie("token", token, {
-            expires: new Date(Date.now() + 8 * 3600000),
-          });
-        res.json({ token, userType: user.userType });
+            httpOnly: true, 
+            secure: false, // ❌ Not needed on localhost (must be true in production)
+            sameSite: "Lax", // ✅ Works fine for local testing
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        });
+        return res.json({ message: "Login successful", token, userId: user._id, userType: user.userType });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

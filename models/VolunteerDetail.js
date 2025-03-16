@@ -1,14 +1,13 @@
 const mongoose = require("mongoose");
 
 const VolunteerDetailSchema = new mongoose.Schema({
-     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     state: { type: String, required: true, trim: true },
     city: { type: String, required: true, trim: true },
     languages_known: { 
-        type: [String], 
+        type: String, 
         required: true, 
         enum: ["Tamil", "English", "Others"] ,
-        default:[]
     },
     qualification: { 
         type: String, 
@@ -20,9 +19,9 @@ const VolunteerDetailSchema = new mongoose.Schema({
         required: true 
     },
     available_session: { 
-        type: [String],  
+        type: String,  
         required: true,
-        enum: ["morning", "afternoon", "evening"]
+        enum: ["Morning", "Afternoon", "Evening"]
     },
     past_experience: { 
         type: String, 
@@ -47,7 +46,7 @@ const VolunteerDetailSchema = new mongoose.Schema({
         required:true
 
     },
-    location_coordiante_longitude:{
+    location_coordinate_longitude:{
         type:Number,
         required:true
     }
