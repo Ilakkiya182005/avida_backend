@@ -59,7 +59,7 @@ exports.findMatchingVolunteers = async (req, res) => {
             languages_known: language_should_be_known_for_volunteer,
             available_dates: { $in: [examDate] }, // Match any date in the array
             available_session: examSession
-        }).populate('userId', 'firstName'); // Populate firstName from User model
+        }).populate('userId', 'firstName _id'); // Populate firstName from User model
 
         // Filter by location criteria (exact match or within travel distance)
         const finalMatches = matchedVolunteers.filter(volunteer => {
@@ -94,6 +94,7 @@ exports.findMatchingVolunteers = async (req, res) => {
             latitude: volunteer.location_coordinate_latitude,
             longitude: volunteer.location_coordinate_longitude
         }));
+        console.log(response,"response");
 
         res.status(200).json({ matchedVolunteers: response });
 
