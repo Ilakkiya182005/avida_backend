@@ -14,7 +14,7 @@ const allowedOrigins = [
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "http://localhost:5173", // Update this to your frontend URL
+        origin: ["http://localhost:5173","https://67f058c5938c4d0e008d9419--clinquant-puppy-12d600.netlify.app/"], // Update this to your frontend URL
         methods: ["GET", "POST"]
     }
 });
