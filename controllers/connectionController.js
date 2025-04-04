@@ -4,7 +4,7 @@ const VolunteerDetail = require('../models/VolunteerDetail');
 
 exports.sendConnectionRequest = async (req, res) => {
     try {
-        const { volunteerId } = req.params; // Changed from examRequestId to volunteerId
+        const { volunteerId } = req.params; 
 
         if (req.user.userType !== "Disabled") {
             return res.status(403).json({ error: "Only disabled users can send connection requests" });
@@ -13,7 +13,7 @@ exports.sendConnectionRequest = async (req, res) => {
         const disabledUserId = req.user._id;
         console.log("Fetching Volunteer for ID:", volunteerId);
 
-        // Check if the volunteer exists
+        
         const volunteer = await VolunteerDetail.findOne({ userId: volunteerId });
         if (!volunteer) {
             return res.status(404).json({ error: "Volunteer not found" });
@@ -45,6 +45,72 @@ exports.sendConnectionRequest = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+// exports.respondToConnectionRequest = async (req, res) => {
+//     try {
+//         const { requestId } = req.params;
+//         const { status } = req.body; // 'accepted' or 'rejected'
+
+//         if (!['accepted', 'rejected'].includes(status)) {
+//             return res.status(400).json({ error: 'Invalid status' });
+//         }
+
+//         // Find the connection request
+//         const request = await ConnectionRequest.findById(requestId)
+//             .populate("disabledUserId")
+//             .populate("volunteerUserId");
+
+//         if (!request) {
+//             return res.status(404).json({ error: 'Connection request not found' });
+//         }
+
+//         // ✅ Allow rejecting without affecting others
+//         if (status === 'rejected') {
+//             request.status = 'rejected';
+//             await request.save();
+//             return res.json({ message: 'Request rejected successfully', request });
+//         }
+
+//         // ✅ If accepted, reject only other pending requests
+//         if (status === 'accepted') {
+//             // Check if another request is already accepted
+//             const alreadyAccepted = await ConnectionRequest.findOne({
+//                 disabledUserId: request.disabledUserId,
+//                 status: 'accepted'
+//             });
+
+//             if (alreadyAccepted) {
+//                 return res.status(400).json({ error: 'This request has already been accepted by another volunteer' });
+//             }
+
+//             // Reject all other pending requests for this disabled user
+//             await ConnectionRequest.updateMany(
+//                 { disabledUserId: request.disabledUserId, status: 'pending', _id: { $ne: request._id } },
+//                 { $set: { status: 'rejected' } }
+//             );
+
+//             // Get volunteer profile
+//             const volunteer = await VolunteerDetail.findOne({ userId: request.volunteerUserId._id });
+
+//             if (!volunteer) return res.status(404).json({ error: "Volunteer profile not found" });
+
+//             // Remove the booked examDate from the available_dates array
+//             volunteer.available_dates = volunteer.available_dates.filter(date => date !== request.disabledUserId.examDate);
+
+//             // Save updated volunteer profile
+//             await volunteer.save();
+//         }
+
+//         // Update the request status to accepted
+//         request.status = 'accepted';
+//         await request.save();
+
+//         res.json({ message: `Request ${status} successfully`, request });
+//     } catch (error) {
+//         console.error("Error processing connection request:", error);
+//         res.status(500).json({ error: error.message });
+//     }
+// };
+
 exports.respondToConnectionRequest = async (req, res) => {
     try {
         const { requestId } = req.params;
@@ -54,7 +120,6 @@ exports.respondToConnectionRequest = async (req, res) => {
             return res.status(400).json({ error: 'Invalid status' });
         }
 
-        // Find the connection request
         const request = await ConnectionRequest.findById(requestId)
             .populate("disabledUserId")
             .populate("volunteerUserId");
@@ -63,14 +128,12 @@ exports.respondToConnectionRequest = async (req, res) => {
             return res.status(404).json({ error: 'Connection request not found' });
         }
 
-        // ✅ Allow rejecting without affecting others
         if (status === 'rejected') {
             request.status = 'rejected';
             await request.save();
             return res.json({ message: 'Request rejected successfully', request });
         }
 
-        // ✅ If accepted, reject only other pending requests
         if (status === 'accepted') {
             // Check if another request is already accepted
             const alreadyAccepted = await ConnectionRequest.findOne({
@@ -88,21 +151,11 @@ exports.respondToConnectionRequest = async (req, res) => {
                 { $set: { status: 'rejected' } }
             );
 
-            // Get volunteer profile
-            const volunteer = await VolunteerDetail.findOne({ userId: request.volunteerUserId._id });
-
-            if (!volunteer) return res.status(404).json({ error: "Volunteer profile not found" });
-
-            // Remove the booked examDate from the available_dates array
-            volunteer.available_dates = volunteer.available_dates.filter(date => date !== request.disabledUserId.examDate);
-
-            // Save updated volunteer profile
-            await volunteer.save();
+            // ✅ Enable chat on acceptance
+            request.status = 'accepted';
+            request.chatEnabled = true;
+            await request.save();
         }
-
-        // Update the request status to accepted
-        request.status = 'accepted';
-        await request.save();
 
         res.json({ message: `Request ${status} successfully`, request });
     } catch (error) {
@@ -110,7 +163,6 @@ exports.respondToConnectionRequest = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
 
 
 
@@ -152,3 +204,41 @@ exports.getRequestsForDisabledUser = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+exports.getRequestsForVolunteer = async (req, res) => {
+    try {
+        const { volunteerUserId } = req.params; // Extract Volunteer ID from URL
+
+        // Fetch all connection requests where this volunteer is the recipient
+        const requests = await ConnectionRequest.find({ volunteerUserId })
+            .populate({
+                path: "disabledUserId",
+                select: "firstName lastName examName examDate examVenue"
+            })
+            .populate({
+                path: "volunteerUserId",
+                select: "firstName lastName qualification city state"
+            });
+
+        console.log({ requests });
+
+        res.json({ requests });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+exports.getAcceptedRequests = async (req, res) => {
+    try {
+      const { volunteerId } = req.params;
+  
+      // Find all accepted requests where the volunteer is involved
+      const acceptedRequests = await ConnectionRequest.find({
+        volunteerUserId: volunteerId,
+        status: "accepted",
+      }).populate("disabledUserId", "firstName lastName email");
+  
+      res.status(200).json({ acceptedRequests });
+    } catch (error) {
+      res.status(500).json({ error: "Server error while fetching accepted requests" });
+    }
+  };

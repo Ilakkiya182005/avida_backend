@@ -9,8 +9,9 @@ connectionRoutes.post("/send/:volunteerId", userAuth, isDisabledUser,connectionC
 // Get pending requests for a volunteer
 connectionRoutes.get('/requests/:volunteerUserId', userAuth,isVolunteerUser,connectionController.getPendingRequestsForVolunteer);
 connectionRoutes.get('/disabled-requests/:disabledUserId', userAuth, connectionController.getRequestsForDisabledUser);
-
+connectionRoutes.get("/volunteer-requests/:volunteerUserId", userAuth, connectionController.getRequestsForVolunteer);
 // Accept or reject a connection request
 connectionRoutes.post('/respond/:requestId',userAuth, connectionController.respondToConnectionRequest);
 
+connectionRoutes.get("/accepted-requests/:volunteerId", userAuth, connectionController.getAcceptedRequests);
 module.exports = connectionRoutes;

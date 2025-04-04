@@ -4,8 +4,10 @@ const axios = require('axios');
 const DisabledExamRequestSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     examName: { type: String, required: true, trim: true },
-    latitude: { type: Number },
-    longitude: { type: Number },
+    latitude: { type: Number 
+     },
+    longitude: { type: Number
+    },
     examVenue: { type: String, required: true, trim: true },
     examSession: { type: String, required: true, enum: ['Morning', 'Afternoon', 'Evening'] },
     examDate: { type: Date, required: true },
@@ -29,7 +31,7 @@ async function getCoordinatesFromOSM(address) {
         if (response.data.length > 0) {
             return {
                 latitude: parseFloat(response.data[0].lat),
-                longitude: parseFloat(response.data[0].lon)
+                longitude: parseFloat(response.data[0].lon)          
             };
         } else {
             throw new Error('Invalid Address');
@@ -40,7 +42,7 @@ async function getCoordinatesFromOSM(address) {
     }
 }
 
-// Middleware to fetch coordinates before saving
+// // Middleware to fetch coordinates before saving
 DisabledExamRequestSchema.pre('save', async function (next) {
     if (!this.isModified('examVenue')) return next(); // Only run if examVenue is modified
 
