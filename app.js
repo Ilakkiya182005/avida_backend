@@ -9,12 +9,12 @@ const socketIo = require("socket.io");
 const app = express();
 const allowedOrigins = [
   'http://localhost:5173',
-  'https://67f058c5938c4d0e008d9419--clinquant-puppy-12d600.netlify.app/'  
+  'https://neon-bubblegum-5023f4.netlify.app/'  
 ];
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: ["http://localhost:5173","https://67f058c5938c4d0e008d9419--clinquant-puppy-12d600.netlify.app/"], // Update this to your frontend URL
+        origin: ["http://localhost:5173","https://neon-bubblegum-5023f4.netlify.app/"], // Update this to your frontend URL
         methods: ["GET", "POST"]
     }
 });

@@ -26,7 +26,7 @@ exports.login = async (req, res) => {
         if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
         const token = jwt.sign({ userId: user._id, userType: user.userType }, "ilak@2005", { expiresIn: '7d' });
-
+      
         res.cookie("token", token, {
             httpOnly: true, 
             secure: true, // ❌ Not needed on localhost (must be true in production)
